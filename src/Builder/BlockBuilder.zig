@@ -428,18 +428,8 @@ pub fn tail_call(self: *BlockBuilder, f: Core.RegisterIndex, as: anytype) Error!
     try self.args(as);
 }
 
-pub fn tail_call_v(self: *BlockBuilder, f: Core.RegisterIndex, y: Core.RegisterIndex, as: anytype) Error!void {
-    try self.exitOp(.tail_call_v, .{ .R0 = f, .R1 = y });
-    try self.args(as);
-}
-
 pub fn tail_call_im(self: *BlockBuilder, f: anytype, as: anytype) Error!void {
     try self.exitOp(.tail_call_im, .{ .F0 = try self.function.parent.extractFunctionIndex(f) });
-    try self.args(as);
-}
-
-pub fn tail_call_im_v(self: *BlockBuilder, f: anytype, y: Core.RegisterIndex, as: anytype) Error!void {
-    try self.exitOp(.tail_call_im_v, .{ .F0 = try self.function.parent.extractFunctionIndex(f), .R0 = y });
     try self.args(as);
 }
 
