@@ -1,0 +1,22 @@
+.{
+    .name = "rbc",
+    .version = "0.1.0",
+    .dependencies = .{
+        .ZigUtils = .{
+            .url = "https://github.com/noxabellus/zig-utils/archive/3af7b28cefb932d62db7b845a68d684d66619445.tar.gz",
+            .hash = "12201ca6097b31b861a41f7ca7472cd2cd74a6f8d56c49eba2c7a72f9f5bc0e1bf5d",
+        },
+        .ISA = .{
+            .path = "../rbc-isa",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "tools",
+        "scripts",
+        "LICENSE",
+        "README.md",
+    },
+}
