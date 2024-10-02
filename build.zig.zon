@@ -7,7 +7,7 @@
             .hash = "12201ca6097b31b861a41f7ca7472cd2cd74a6f8d56c49eba2c7a72f9f5bc0e1bf5d",
         },
         .ISA = .{
-            .url = "https://github.com/noxabellus/rbc-isa/archive/22dbba24982540c80436df16d00cda09b4bef1ee.tar.gz",
+            .url = "https://github.com/ribbon-lang/rbc-isa/archive/22dbba24982540c80436df16d00cda09b4bef1ee.tar.gz",
             .hash = "1220d775c454149af5b3d13668585158d5cf04ee199b1d8ca7b0c136d4f72ca2315e",
         },
     },
