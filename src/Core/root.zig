@@ -28,7 +28,6 @@ pub const MemorySize = u48;
 pub const ForeignId = u48;
 
 pub const MAX_BLOCKS: BlockIndex = 1024;
-pub const MAX_EVIDENCE: EvidenceIndex = 1024;
 pub const MAX_REGISTERS: RegisterIndex = 255;
 
 pub const EVIDENCE_SENTINEL = std.math.maxInt(EvidenceIndex);

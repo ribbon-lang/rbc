@@ -13,10 +13,11 @@ const FunctionBuilder = @This();
 parent: *Builder,
 index: Core.FunctionIndex,
 blocks: Builder.BlockList,
-entry: *BlockBuilder,
-evidence: ?Core.EvidenceIndex,
-num_arguments: usize,
-num_locals: usize,
+entry: *BlockBuilder = undefined,
+evidence: ?Core.EvidenceIndex = null,
+num_arguments: usize = 0,
+num_locals: usize = 0,
+num_upvalues: usize = 0,
 
 
 
@@ -31,13 +32,10 @@ pub fn init(parent: *Builder, index: Core.FunctionIndex) Error!*FunctionBuilder 
         .parent = parent,
         .index = index,
         .blocks = blocks,
-        .entry = undefined,
-        .evidence = null,
-        .num_arguments = 0,
-        .num_locals = 0,
     };
 
     ptr.entry = try BlockBuilder.init(ptr, null, 0, .basic);
+
     ptr.blocks.appendAssumeCapacity(ptr.entry);
 
     return ptr;
@@ -108,6 +106,15 @@ pub fn local(self: *FunctionBuilder) Error!Core.RegisterIndex {
     if (index >= Core.MAX_REGISTERS) return Error.TooManyRegisters;
 
     self.num_locals += 1;
+
+    return @truncate(index);
+}
+
+pub fn upvalue(self: *FunctionBuilder) Error!Core.UpvalueIndex {
+    const index = self.num_upvalues;
+    if (index >= Core.MAX_REGISTERS) return Error.TooManyUpvalues;
+
+    self.num_upvalues += 1;
 
     return @truncate(index);
 }

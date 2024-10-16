@@ -6,7 +6,6 @@ const Core = @import("Core");
 
 const Builder = @This();
 pub const BlockBuilder = @import("./BlockBuilder.zig");
-pub const EvidenceBuilder = @import("./EvidenceBuilder.zig");
 pub const FunctionBuilder = @import("./FunctionBuilder.zig");
 pub const HandlerSetBuilder = @import("./HandlerSetBuilder.zig");
 
@@ -15,7 +14,7 @@ allocator: std.mem.Allocator,
 globals: GlobalList,
 functions: FunctionList,
 handler_sets: HandlerSetList,
-evidences: EvidenceMap(*EvidenceBuilder),
+evidences: usize,
 main_function: ?Core.FunctionIndex,
 
 
@@ -111,15 +110,12 @@ pub fn init(allocator: std.mem.Allocator) std.mem.Allocator.Error!Builder {
     var handler_sets = HandlerSetList {};
     try handler_sets.ensureTotalCapacity(allocator, 256);
 
-    var evidences = EvidenceMap(*EvidenceBuilder) {};
-    try evidences.ensureTotalCapacity(allocator, 256);
-
     return Builder {
         .allocator = allocator,
         .globals = globals,
         .functions = functions,
         .handler_sets = handler_sets,
-        .evidences = evidences,
+        .evidences = 0,
         .main_function = null,
     };
 }
@@ -298,21 +294,13 @@ pub fn foreign(self: *Builder, num_arguments: Core.RegisterIndex, num_registers:
     return &func.foreign;
 }
 
-pub fn getEvidence(self: *const Builder, e: Core.EvidenceIndex) Error!*EvidenceBuilder {
-    return self.evidences.get(e) orelse Error.InvalidIndex;
-}
-
-pub fn evidence(self: *Builder) Error!*EvidenceBuilder {
-    const index = self.evidences.keys().len;
-    if (index >= std.math.maxInt(Core.EvidenceIndex)) {
+pub fn evidence(self: *Builder) Error!Core.EvidenceIndex {
+    const index = self.evidences;
+    if (index >= Core.EVIDENCE_SENTINEL) {
         return Error.TooManyEvidences;
     }
 
-    const builder = try EvidenceBuilder.init(self, @truncate(index));
-
-    try self.evidences.put(self.allocator, @truncate(index), builder);
-
-    return builder;
+    return @truncate(index);
 }
 
 
@@ -398,48 +386,6 @@ pub fn extractHandlerSetIndex(self: *const Builder, h: anytype) Error!Core.Handl
         else => @compileError(std.fmt.comptimePrint(
             "invalid handler set index parameter, expected either `Core.HandlerSetIndex` or `*Builder.HandlerSetBuilder`, got `{s}`",
             .{@typeName(@TypeOf(h))}
-        )),
-    }
-}
-
-pub fn extractEvidenceIndex(self: *const Builder, e: anytype) Error!Core.EvidenceIndex {
-    switch (@TypeOf(e)) {
-        *Core.EvidenceIndex => return extractEvidenceIndex(self, e.*),
-        Core.EvidenceIndex => {
-            if (e >= self.evidences.keys().len) {
-                return Error.InvalidIndex;
-            }
-
-            return e;
-        },
-
-        EvidenceBuilder => return extractEvidenceIndex(self, &e),
-        *EvidenceBuilder => return extractEvidenceIndex(self, @as(*const EvidenceBuilder, e)),
-        *const EvidenceBuilder => {
-            if (e.parent != self) {
-                return Error.InvalidIndex;
-            }
-
-            return e.index;
-        },
-
-        *Core.FunctionIndex,
-        Core.FunctionIndex,
-        Function,
-        *Function,
-        *const Function,
-        FunctionBuilder,
-        *FunctionBuilder,
-        *const FunctionBuilder,
-        => {
-            const functionIndex = try self.extractFunctionIndex(e);
-
-            return try self.getFunctionEvidence(functionIndex) orelse Error.MissingEvidence;
-        },
-
-        else => @compileError(std.fmt.comptimePrint(
-            "invalid evidence index parameter, expected either `Core.EvidenceIndex`, `*Builder.EvidenceBuilder` or a function that is evidence, got `{s}`",
-            .{@typeName(@TypeOf(e))}
         )),
     }
 }
